@@ -10,8 +10,16 @@ import SwiftUI
 @main
 struct AudioToTextApp: App {
     var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
+        #if os(macOS)
+       Window("Audio Player", id: "player") {
+           AudioPlayerView()
+       }
+       .defaultSize(width: 500, height: 800)
+       .windowResizability(.contentMinSize)
+       #endif
+       
+       WindowGroup {
+           ContentView()
+       }
     }
 }
