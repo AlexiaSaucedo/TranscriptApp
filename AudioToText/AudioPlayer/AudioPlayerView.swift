@@ -8,44 +8,59 @@
 import SwiftUI
 
 struct AudioPlayerView: View {
-    //New Variables
-    //@Binding var expandSheet: Bool
-    //var animation: Namespace.ID
-    @State private var animationContent: Bool = false
     
     @StateObject private var audioPlayerViewModel = AudioPlayerViewModel()
-    @State private var transcriptManager = TranscriptManager()
+    var audioPath: URL?
     
     var body: some View {
         VStack{
+            //Just show when there is a transcription
             TranscriptView()
-            Button(action: {
-                audioPlayerViewModel.playOrPause()
-            }){
-                Image(systemName: audioPlayerViewModel.isPlaying ? "pause.circle" : "play.circle")
-                    .resizable()
-                    .frame(width: 64, height: 64)
-            }
             
-            Slider(value: Binding(get: {audioPlayerViewModel.currentTime}, set: {
-                newValue in audioPlayerViewModel.seekAudio(to: newValue)}),
-                   in: 0...audioPlayerViewModel.totalTime)
-            .foregroundColor(.white)
+            VStack{
+                //Slider
+                Slider(value: Binding(get: {audioPlayerViewModel.currentTime}, set: {
+                    newValue in audioPlayerViewModel.seekAudio(to: newValue)}),
+                       in: 0...audioPlayerViewModel.totalTime)
+                .controlSize(.mini)
+                
+                //Time Stamps
+                HStack{
+                    Text(audioPlayerViewModel.timeString(time: audioPlayerViewModel.currentTime)).foregroundStyle(.gray)
+                    Spacer()
+                    Text(audioPlayerViewModel.timeString(time: audioPlayerViewModel.totalTime)).foregroundStyle(.gray)
+                }
+            }.padding()
             
             HStack{
-                Text(audioPlayerViewModel.timeString(time: audioPlayerViewModel.currentTime))
-                Spacer()
-                Text(audioPlayerViewModel.timeString(time: audioPlayerViewModel.totalTime))
+                Button(action:{print("10 seconds before")}) {
+                    Image(systemName: "gobackward.10").frame(width: 24, height: 24)
+                }.buttonStyle(.borderless).padding().foregroundStyle(.gray)
+                
+                Button(action: {
+                    audioPlayerViewModel.playOrPause()
+                }){
+                    Image(systemName: audioPlayerViewModel.isPlaying ? "pause.fill" : "play.fill")
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                }.buttonStyle(.borderless).foregroundStyle(.gray)
+                
+                Button(action:{print("10 before")}) {
+                    Image(systemName: "goforward.10").frame(width: 24,height: 24)
+                }.buttonStyle(.borderless).padding().foregroundStyle(.gray)
             }
+            
             
         }
         .onAppear{
             audioPlayerViewModel.loadAudioFile(named: "french")
-            transcriptManager.fetchTranscript()
-            //transcriptManager.sendPostRequest(filename: "french")
+            print(audioPath ?? "No URL from File Browser")
         }
         .onReceive(Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()){
             _ in audioPlayerViewModel.updateProgress()
+        }
+        .background{
+            Color.white
         }
     }
 }

@@ -16,8 +16,6 @@ class AudioPlayerViewModel: ObservableObject {
     @Published var currentTime: TimeInterval = 0.0
     
     
-    
-    
     func loadAudioFile(named filename: String) {
         if let url = Bundle.main.url(forResource: filename, withExtension: "mp3"){
             do {

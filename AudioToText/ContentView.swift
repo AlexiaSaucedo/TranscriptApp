@@ -12,9 +12,13 @@ struct ContentView: View {
     @Environment(\.openWindow) private var openWindow
     
     var body: some View {
-        Button("Open Audio Player") {
-            openWindow(id: "player")
-        }
+        NavigationView{
+            List{
+                NavigationLink("Play Now"){AudioPlayerView()}
+                NavigationLink("New Transcript"){FileInspectorView()}
+            }
+        
+        }.navigationTitle("Transcription App")
     }
 }
 

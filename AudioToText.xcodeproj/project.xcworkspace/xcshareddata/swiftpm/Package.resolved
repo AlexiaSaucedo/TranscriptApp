@@ -1,7 +1,8 @@
 {
-  "originHash" : "8f61689e55c5551e76f2c686d145061dc1fa621a58cbca576565ebfabc15c894",
+  "originHash" : "e8f130fe30ac6cdc940ef06ee1e8535e9f46ffee6aeead1722b9525562f6ce08",
   "pins" : [
     {
+<<<<<<< HEAD
       "identity" : "jinja",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/johnmai-dev/Jinja",
@@ -12,9 +13,13 @@
     },
     {
       "identity" : "swift-argument-parser",
+=======
+      "identity" : "alamofire",
+>>>>>>> 94b5a1f (feat: add initial structure for TranscriptView, FileInspectorView and AudioPlayerView)
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-argument-parser.git",
+      "location" : "https://github.com/Alamofire/Alamofire.git",
       "state" : {
+<<<<<<< HEAD
         "revision" : "41982a3656a71c768319979febd796c6fd111d5c",
         "version" : "1.5.0"
       }
@@ -44,6 +49,10 @@
       "state" : {
         "branch" : "main",
         "revision" : "ca495968b471cdf9b09c4c34ecf1ba509e31aaec"
+=======
+        "revision" : "513364f870f6bfc468f9d2ff0a95caccc10044c5",
+        "version" : "5.10.2"
+>>>>>>> 94b5a1f (feat: add initial structure for TranscriptView, FileInspectorView and AudioPlayerView)
       }
     }
   ],
