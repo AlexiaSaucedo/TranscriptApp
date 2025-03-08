@@ -7,8 +7,6 @@
 
 import Foundation
 
-import WhisperKit
-
 /* curl example from OpenAI for the whisper Model  */
 struct TranscriptManager{
     
