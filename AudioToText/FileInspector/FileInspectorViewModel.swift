@@ -7,37 +7,50 @@
 
 import Foundation
 import CoreServices
+import AVFoundation
 
 class FileInspectorViewModel: ObservableObject{
     //Path
-    var pathFile : String = ""
+    @Published var selectedFileURL: URL?
+    //var pathFile : String = ""
     
     // Get path from View
     func audioDirectoryPicked(_ url: URL) -> Void{
-        pathFile = url.relativePath
+        let pathFile = url.relativePath
         if let mditem = MDItemCreate(nil, pathFile as CFString),
            let mdnames = MDItemCopyAttributeNames(mditem),
            let mdattrs = MDItemCopyAttributes(mditem, mdnames) as? [String:Any]{
             
             //print(mdattrs)
-            print("Item Kind: \(mdattrs[kMDItemKind as String] as? String ?? "No Type")")
             //print("Media Type: \(mdattrs[kMDItemMediaTypes as String] ?? "No Media")")
-        }else{
+            let fileType = mdattrs[kMDItemKind as String] as? String ?? "No Type"
+            print("Item Kind: \(fileType)")
+            
+            if isValidMP3(url) {
+                selectedFileURL = url
+                print("Valid MP3 file selected.")
+            } else {
+                print("Invalid MP3 file.")
+            }
+        } else {
             print("Can't get attributes for \(pathFile)")
         }
         
     }
-    // Verify if the file is correct
     
-    func checkMp3(_ type: String) -> Bool{
-        if(type == "MP3 audio"){
-            return true
+    // Verify correct Audio Format
+    private func isValidMP3(_ url: URL) -> Bool {
+        guard url.pathExtension.lowercased() == "mp3" else { return false }
+        
+        do {
+            let audioFile = try AVAudioFile(forReading: url)
+            let format = audioFile.fileFormat
+            
+            return format.sampleRate > 0 && format.channelCount > 0
+        } catch {
+            print("Error reading audio file: \(error.localizedDescription)")
+            return false
         }
-        return false
     }
     
-    // When ready play in a Audio Player
-//    func playAudioFile(_ path: URL) -> Void{
-//        AudioPlayerView(audioPath: path)
-//    }
 }

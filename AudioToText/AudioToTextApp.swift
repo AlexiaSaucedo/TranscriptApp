@@ -12,8 +12,8 @@ struct AudioToTextApp: App {
     var body: some Scene {
         #if os(macOS)
         Window("Audio Player", id: "player") {
+            ContentView().preferredColorScheme(.light)
             //AudioPlayerView()
-            ContentView()
         }
        .windowResizability(.contentSize)
        #endif

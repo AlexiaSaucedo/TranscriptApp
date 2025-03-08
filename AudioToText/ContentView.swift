@@ -12,13 +12,18 @@ struct ContentView: View {
     @Environment(\.openWindow) private var openWindow
     
     var body: some View {
-        NavigationView{
-            List{
-                NavigationLink("Play Now"){AudioPlayerView()}
-                NavigationLink("New Transcript"){FileInspectorView()}
-            }
+//        NavigationView{
+//            List{
+//                NavigationLink("Play Now"){AudioPlayerView()}
+//                NavigationLink("New Transcript"){FileInspectorView()}
+//            }
+//        
+//        }.navigationTitle("Transcription App")
         
-        }.navigationTitle("Transcription App")
+        FileInspectorView().preferredColorScheme(.light)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 100)
+            .background(Color.backgroundLight)
     }
 }
 
