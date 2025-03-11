@@ -10,7 +10,7 @@ import SwiftUI
 struct AudioPlayerView: View {
     
     @StateObject private var audioPlayerViewModel = AudioPlayerViewModel()
-    var audioPath: URL?
+    var audioURL: URL?
     
     var body: some View {
         VStack{
@@ -53,8 +53,14 @@ struct AudioPlayerView: View {
             
         }
         .onAppear{
-            audioPlayerViewModel.loadAudioFile(named: "french")
-            print(audioPath ?? "No URL from File Browser")
+            if let audioURL = audioURL {
+                audioPlayerViewModel.loadAudioFile(from: audioURL)
+            } else {
+                print("No valid audio file URL provided.")
+            }
+            
+//            audioPlayerViewModel.loadAudioFile(named: "french")
+//            print(audioPath ?? "No URL from File Browser")
         }
         .onReceive(Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()){
             _ in audioPlayerViewModel.updateProgress()
@@ -66,5 +72,5 @@ struct AudioPlayerView: View {
 }
 
 #Preview {
-    AudioPlayerView()
+    AudioPlayerView(audioURL: URL(string: "/Users/alexiasau/IOS Dev /AudioToText/AudioToText/french.mp3"))
 }

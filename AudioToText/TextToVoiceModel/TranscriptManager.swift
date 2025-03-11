@@ -6,67 +6,158 @@
 //
 
 import Foundation
+import SwiftUI
+import Alamofire
+import UniformTypeIdentifiers
+
+extension URL {
+    public func mimeType() -> String {
+        if let mimeType = UTType(filenameExtension: self.pathExtension)?.preferredMIMEType {
+            return mimeType
+        }
+        else {
+            return "application/octet-stream"
+        }
+    }
+}
+
+
+enum TranscriptError: Error {
+    case invalidURL
+    case invalidResponse
+}
 
 /* curl example from OpenAI for the whisper Model  */
-struct TranscriptManager{
+class TranscriptManager {
     
-    var multipart = MultipartRequest()
-    //var multipart : MultipartRequest
+    @State var multipart = MultipartRequest()
+   
+    static let shared = TranscriptManager()
     
-    let apiURL = "http://localhost:3000/transcribe";
+    // Instance of a URLSession as Singleton
+    private let session: URLSession
     
-    
-    let openAiurl = "https://api.openai.com/v1/audio/transcriptions"
-    
-    let jsonPayload: [String : Any] = [
-        "file": "@/Users/alexiasau/Downloads/french1.mp3",
-        "model": "whisper-1"
-    ]
-    let filepayload = "file=@/Users/alexiasau/Downloads/french1.mp3".data(using: .utf8)
-    let modelpayload = "model=whisper-1".data(using: .utf8)
-    
-//    func useModelWhisper(){
-//        Task{
-//            let pipe = try? await WhisperKit()
-//            let transcription = try? await pipe!.transcribe(audioPath: "/Users/alexiasau/Downloads/french1.mp3")?.text
-//            print(transcription)
-//        }
-//    }
-    
-    mutating func formBody(){
-            multipart.add(key: "file", fileName: "french.mp3", fileMimeType: "mp3", fileData: "audio-file".data(using: .utf8)!)
-//            multipart.add(key: "model", value: "whisper-1")
-//            multipart.add(key: "response_format", value: "text")
-            //self.multipart = multipart // you can do this since ModelOne conforms to SuperModel
-        
-//        multipart = multipart.add(key: "file", fileName: "french.mp3", fileMimeType: "mp3", fileData: "audio-file".data(using: .utf8)!)
-//        multipart = multipart.add(key: "model", value: "whisper-1")
-//        multipart = multipart.add(key: "response_format", value: "text")
+    init() {
+        let config =  URLSessionConfiguration.background(withIdentifier: "uploadMP3")
+        session = URLSession(configuration: config)
     }
     
-    mutating func fetchTranscript(){
+    let apiURL = "http://localhost:3000/transcribe"
+    
+    func getMessage(){
+        let url = "http://localhost:3000/msg"
+        
+        guard let url = URL(string: url) else {
+            return
+        }
+        
+        AF.request(url, method: .get).response{ response in
+            guard let data = response.data else {
+                return
+            }
+            print(String(decoding:data, as:UTF8.self))
+        }
+        
+    }
+    
+    func uploadAudio(named filename: String){
+        let url = "http://localhost:3000/transcribe"
+        
+        guard let url = URL(string: url) else {
+            return
+        }
+        
+        //File Handle
+        let filePath = Bundle.main.url(forResource: filename, withExtension: "mp3")
+        let mimeType = filePath?.mimeType()
+        let fileData = try? Data(contentsOf: filePath!)
+        
+        
+        AF.upload(multipartFormData: { multipartFormData in
+            multipartFormData.append(fileData ?? Data(), withName: "audio", fileName: "\(filename).mp3", mimeType: mimeType ?? "")
+        }, to: url, method: .post)
+        .response{
+            response in
+            if let data = response.data {
+                print(String(decoding: data, as:UTF8.self))
+            }
+            else {
+                print("Something went wrong")
+            }
+        }
+    }
+    
+    
+    func fetchTranscript() async throws {
+        guard let url = URL(string: apiURL) else {
+            print("Bad Url")
+            throw TranscriptError.invalidURL
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(multipart.httpContentTypeHeadeValue, forHTTPHeaderField: "Content-Type")
+        
+        multipart.add(key: "audio", fileName: "french.mp3", fileMimeType: "audio/mpeg", fileData: "french.mp3".data(using: .utf8)!)
+        
+        request.httpBody = multipart.httpBody
+        
+        let task = session.uploadTask(withStreamedRequest: request)
+        task.resume()
+    }
+     
+    
+    func getTranscript(completion: @escaping (String?, Error?) -> (Void)){
         
             if let url = URL(string: apiURL){
                 var request = URLRequest(url: url)
                 request.httpMethod = "POST"
-                request.setValue("multipart/form-data", forHTTPHeaderField: "Content-Type")
+                request.setValue(multipart.httpContentTypeHeadeValue, forHTTPHeaderField: "Content-Type")
                 
-                multipart.add(key: "file", fileName: "french.mp3", fileMimeType: "mp3", fileData: "audio-file".data(using: .utf8)!)
+                multipart.add(key: "audio", fileName: "french.mp3", fileMimeType: "audio/mpeg", fileData: "french.mp3".data(using: .utf8)!)
                 
                 request.httpBody = multipart.httpBody
                 
-                let task = URLSession.shared.dataTask(with: request) {(data, response, error) in
-                    if let error = error {
-                        print(error)
-                    } else if let data = data {
-                        let str = String(data: data, encoding: .utf8)
-                        print(str ?? "")
-                    }
-                }
+                // uploadTask -> uploadFile
+                let task = session.uploadTask(withStreamedRequest: request)
                 task.resume()
-            }
-       
         
+            }
+    
+    
+// CLOSURE
+//    {(data: Data?, response: URLResponse?, error: Error?) in
+//        
+//        // Response situations
+//        if let error = error {
+//            print("Error", error)
+//            return
+//        }
+//        
+//        guard let httpResponse = response as? HTTPURLResponse else {
+//            print("not the right response")
+//            return
+//        }
+//        
+//        guard (200...299).contains(httpResponse.statusCode) else {
+//            print("Error, status code", httpResponse.statusCode)
+//            return
+//        }
+//        
+//        guard let data = data else {
+//           print("bad data")
+//            return
+//        }
+//        
+//        do {
+//            let str = String(data: data, encoding: .utf8)
+//            print(str ?? "")
+//            DispatchQueue.main.async{
+//                completion(str, nil)
+//            }
+//        }
+//    }
+
     }
     
 }

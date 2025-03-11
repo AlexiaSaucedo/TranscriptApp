@@ -16,8 +16,8 @@ class AudioPlayerViewModel: ObservableObject {
     @Published var currentTime: TimeInterval = 0.0
     
     
-    func loadAudioFile(named filename: String) {
-        if let url = Bundle.main.url(forResource: filename, withExtension: "mp3"){
+    func loadAudioFile(from url: URL) {
+//        if let url = Bundle.main.url(forResource: filename, withExtension: "mp3"){
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: url)
                 audioPlayer?.prepareToPlay()
@@ -25,9 +25,9 @@ class AudioPlayerViewModel: ObservableObject {
             } catch {
                 print("AVAudioPlayer could not be instantiated.")
             }
-        } else {
-            print("Audio file could not be found.")
-        }
+//        } else {
+//            print("Audio file could not be found.")
+//        }
     }
 
       func playOrPause() {

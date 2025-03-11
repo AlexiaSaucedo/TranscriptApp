@@ -7,9 +7,6 @@
 
 import SwiftUI
 
-// TODO: Animation
-// Fetch Data
-
 struct TranscriptView: View {
     @State private var transcriptManager = TranscriptManager()
     @StateObject var vm = CoreDataViewModel()
