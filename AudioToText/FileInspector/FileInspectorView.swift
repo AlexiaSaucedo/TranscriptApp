@@ -38,42 +38,58 @@ struct PrimaryButtonStyle: ButtonStyle {
 
 struct FileInspectorView: View {
     
+    @StateObject private var viewModel = FileInspectorViewModel()
     @State private var hasSelectedFile: Bool = false
+    @State private var navigateToPlayer: Bool = false
     
     var body: some View {
-        VStack{
-            HStack(spacing: 2){
-                Image(systemName: "music.note.list")
-                    .font(.title)
-                
-                Text("New Transcription")
-                    .font(.title)
-                    .fontWeight(.semibold)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 14)
-            
-            if hasSelectedFile {
-                AudioFileCell(hasSelectedFile: $hasSelectedFile)
-            } else {
-                SelectFilesSection(hasSelectedFile: $hasSelectedFile)
-                Text("Only .mp3 files. 800kb file size.")
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .foregroundStyle(.gray)
-            }
-            
-            Group {
-                Button(action: {print("star transcript")}){
-                    Text("Start Transcript")
+        NavigationStack {
+            VStack{
+                HStack(spacing: 2){
+                    Image(systemName: "music.note.list")
+                        .font(.title)
+                    
+                    Text("New Transcription")
+                        .font(.title)
+                        .fontWeight(.semibold)
                 }
-                .buttonStyle(PrimaryButtonStyle())
-                .padding(.vertical, 20)
-                .disabled(!hasSelectedFile)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 14)
+                
+                if hasSelectedFile {
+                    AudioFileCell(hasSelectedFile: $hasSelectedFile)
+                } else {
+                    SelectFilesSection(
+                        viewModel: viewModel,
+                        hasSelectedFile: $hasSelectedFile
+                    )
+                    Text("Only .mp3 files. 800kb file size.")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .foregroundStyle(.gray)
+                }
+                
+                Group {
+                    Button(action: {
+                        if let _ = viewModel.selectedFileURL {
+                            navigateToPlayer = true
+                        }
+                    }) {
+                        Text("Start Transcript")
+                    }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .padding(.vertical, 20)
+                    .disabled(!hasSelectedFile)
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                
             }
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            
+            .frame(width: 520)
+            .navigationDestination(isPresented: $navigateToPlayer) {
+                if let fileURL = viewModel.selectedFileURL {
+                    AudioPlayerView(audioURL: fileURL)
+                }
+            }
         }
-        .frame(width: 520)
     }
 }
 
@@ -86,11 +102,8 @@ struct FileInspectorView: View {
 
 struct SelectFilesSection: View {
     
-    @ObservedObject var viewModel = FileInspectorViewModel()
-    
+    @ObservedObject var viewModel: FileInspectorViewModel
     @State private var showFileInspector: Bool = false
-    
-    @State private var selectedFileURL: URL? = nil
     @Binding var hasSelectedFile: Bool
     
     var body: some View {
@@ -127,20 +140,16 @@ struct SelectFilesSection: View {
                 .buttonStyle(SecondaryButtonStyle())
                 .fileImporter(
                     isPresented: $showFileInspector,
-                    allowedContentTypes: [.mp3]){ result in
+                    allowedContentTypes: [.mp3]) { result in
                         switch result {
                         case .success(let directory):
                             //Gain access to directory
                             let gotAccess = directory.startAccessingSecurityScopedResource()
                             if !gotAccess { return }
                             //Access the directory URL
-                            print(directory)
                             viewModel.audioDirectoryPicked(directory)
                             
-                            if let validFile = viewModel.selectedFileURL {
-                                selectedFileURL = validFile
-                                hasSelectedFile = true
-                            }
+                            hasSelectedFile = viewModel.selectedFileURL != nil
                             
                             directory.stopAccessingSecurityScopedResource()
                         case .failure(let error):
@@ -148,8 +157,7 @@ struct SelectFilesSection: View {
                         }
                     }
                 
-            }
-            
+            }  
         }
     }
 }

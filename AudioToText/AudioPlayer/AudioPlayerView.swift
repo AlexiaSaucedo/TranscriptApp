@@ -30,12 +30,12 @@ struct AudioPlayerView: View {
                     Spacer()
                     Text(audioPlayerViewModel.timeString(time: audioPlayerViewModel.totalTime)).foregroundStyle(.gray)
                 }
-            }.padding()
+            }.padding(.top, 20)
             
-            HStack{
+            HStack(spacing: 10){
                 Button(action:{print("10 seconds before")}) {
                     Image(systemName: "gobackward.10").frame(width: 24, height: 24)
-                }.buttonStyle(.borderless).padding().foregroundStyle(.gray)
+                }.buttonStyle(.borderless).foregroundStyle(.gray)
                 
                 Button(action: {
                     audioPlayerViewModel.playOrPause()
@@ -43,15 +43,15 @@ struct AudioPlayerView: View {
                     Image(systemName: audioPlayerViewModel.isPlaying ? "pause.fill" : "play.fill")
                         .resizable()
                         .frame(width: 20, height: 20)
-                }.buttonStyle(.borderless).foregroundStyle(.gray)
+                }.buttonStyle(.borderless).padding([.trailing,.leading], 10).foregroundStyle(.gray)
                 
                 Button(action:{print("10 before")}) {
                     Image(systemName: "goforward.10").frame(width: 24,height: 24)
-                }.buttonStyle(.borderless).padding().foregroundStyle(.gray)
+                }.buttonStyle(.borderless).foregroundStyle(.gray)
             }
             
-            
         }
+        .frame(width: 560)
         .onAppear{
             if let audioURL = audioURL {
                 audioPlayerViewModel.loadAudioFile(from: audioURL)
@@ -65,12 +65,13 @@ struct AudioPlayerView: View {
         .onReceive(Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()){
             _ in audioPlayerViewModel.updateProgress()
         }
-        .background{
-            Color.white
-        }
     }
 }
 
 #Preview {
-    AudioPlayerView(audioURL: URL(string: "/Users/alexiasau/IOS Dev /AudioToText/AudioToText/french.mp3"))
+    AudioPlayerView(audioURL: URL(string: "/Users/alexiasau/IOS Dev /AudioToText/AudioToText/french.mp3")).preferredColorScheme(.light)
+        .frame(height: 600)
+        .frame(maxWidth: .infinity)
+        .padding([.vertical, .horizontal], 20)
+        .background(Color.backgroundLight)
 }

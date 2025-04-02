@@ -10,25 +10,33 @@ import CoreServices
 import AVFoundation
 
 class FileInspectorViewModel: ObservableObject{
-    //Path
+ 
     @Published var selectedFileURL: URL?
-    //var pathFile : String = ""
     
-    // Get path from View
     func audioDirectoryPicked(_ url: URL) -> Void{
         let pathFile = url.relativePath
         if let mditem = MDItemCreate(nil, pathFile as CFString),
            let mdnames = MDItemCopyAttributeNames(mditem),
            let mdattrs = MDItemCopyAttributes(mditem, mdnames) as? [String:Any]{
             
-            //print(mdattrs)
-            //print("Media Type: \(mdattrs[kMDItemMediaTypes as String] ?? "No Media")")
             let fileType = mdattrs[kMDItemKind as String] as? String ?? "No Type"
             print("Item Kind: \(fileType)")
             
             if isValidMP3(url) {
-                selectedFileURL = url
-                print("Valid MP3 file selected.")
+                // Bookmark the URL for persistent access
+                do {
+                    let bookmarkData = try url.bookmarkData(
+                        options: .minimalBookmark,
+                        includingResourceValuesForKeys: nil,
+                        relativeTo: nil
+                    )
+                    // Store the bookmark data and URL
+                    self.selectedFileURL = url
+                    UserDefaults.standard.set(bookmarkData, forKey: "audioBookmark")
+                    print("Successfully bookmarked audio file")
+                } catch {
+                    print("Failed to create bookmark: \(error)")
+                }
             } else {
                 print("Invalid MP3 file.")
             }

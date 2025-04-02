@@ -17,17 +17,29 @@ class AudioPlayerViewModel: ObservableObject {
     
     
     func loadAudioFile(from url: URL) {
-//        if let url = Bundle.main.url(forResource: filename, withExtension: "mp3"){
-            do {
+        do {
+            print("Attempting to load audio from URL: \(url)")
+            print("File exists: \(FileManager.default.fileExists(atPath: url.path))")
+            
+            // Try to access the file
+            if url.startAccessingSecurityScopedResource() {
+                defer { url.stopAccessingSecurityScopedResource() }
+                
                 audioPlayer = try AVAudioPlayer(contentsOf: url)
                 audioPlayer?.prepareToPlay()
                 totalTime = audioPlayer?.duration ?? 0.0
-            } catch {
-                print("AVAudioPlayer could not be instantiated.")
+                
+                print("Successfully loaded audio file.")
+            } else {
+                print("Failed to access security-scoped resource")
             }
-//        } else {
-//            print("Audio file could not be found.")
-//        }
+        } catch let error as NSError {
+            print("AVAudioPlayer initialization failed with error:")
+            print("Domain: \(error.domain)")
+            print("Code: \(error.code)")
+            print("Description: \(error.localizedDescription)")
+            print("Underlying error: \(error.userInfo)")
+        }
     }
 
       func playOrPause() {
