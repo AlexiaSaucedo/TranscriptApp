@@ -15,7 +15,9 @@ struct AudioPlayerView: View {
     var body: some View {
         VStack{
             //Just show when there is a transcription
-            TranscriptView()
+            if let url = audioURL {
+                TranscriptView(audioURL: url)   
+            }
             
             VStack{
                 //Slider

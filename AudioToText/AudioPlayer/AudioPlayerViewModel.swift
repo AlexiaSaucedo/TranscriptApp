@@ -18,8 +18,8 @@ class AudioPlayerViewModel: ObservableObject {
     
     func loadAudioFile(from url: URL) {
         do {
-            print("Attempting to load audio from URL: \(url)")
-            print("File exists: \(FileManager.default.fileExists(atPath: url.path))")
+            // print("Attempting to load audio from URL: \(url)")
+            // print("File exists: \(FileManager.default.fileExists(atPath: url.path))")
             
             // Try to access the file
             if url.startAccessingSecurityScopedResource() {
@@ -29,7 +29,7 @@ class AudioPlayerViewModel: ObservableObject {
                 audioPlayer?.prepareToPlay()
                 totalTime = audioPlayer?.duration ?? 0.0
                 
-                print("Successfully loaded audio file.")
+                // print("Successfully loaded audio file.")
             } else {
                 print("Failed to access security-scoped resource")
             }
